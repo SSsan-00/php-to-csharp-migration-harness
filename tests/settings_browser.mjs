@@ -139,6 +139,14 @@ try {
   await navigate("Page.navigate", {url});
   await wait(`document.readyState === "complete" && document.documentElement.dataset.liveReady === "true" && typeof window.harnessEditorCanSwitch === "function" && !!window.harnessRuns && ${field("tab-settings")}?.offsetWidth`);
   await click("tab-progress");
+  const checkerNote = "a previous checker finding is still present";
+  const checkerPresentation = async reason => evaluate(`(() => {
+    renderCheckerStatus(${JSON.stringify({ready: true, status: "checker_needs_review",
+      checker_review_reason: reason, error: checkerNote, resumable: true})});
+    return [${field("checker-review-reason")}.textContent, ${field("checker-review-technical")}.textContent];
+  })()`);
+  assert.match((await checkerPresentation("finding_repeated"))[0], /同じチェッカーの指摘/);
+  assert.deepEqual(await checkerPresentation(null), ["チェッカーの指摘が残っているため、確認が必要です。", checkerNote]);
   await wait(`!${field("recovery-summary")}.hidden && ${field("recovery-next")}.textContent.includes("実行結果不明")`);
   assert(await evaluate(`${field("recovery-checkpoint")}.textContent.includes("1 / 3")`));
   assert(await evaluate(`${field("recovery-pending")}.textContent.includes("指示 1 件")`));

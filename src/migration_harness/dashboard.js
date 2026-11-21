@@ -917,27 +917,10 @@ const checkerReviewGuidance = {
   repair_error: ["自動修正の途中でエラーが発生しました。"],
   review_required: ["チェッカーの指摘が残っているため、確認が必要です。"],
 };
-const checkerLegacyReasons = [
-  [/a previous checker finding is still present/, "finding_repeated"],
-  [/automatic repair limit reached/, "repair_limit"],
-  [/outside the configured migration targets/, "outside_targets"],
-  [/too (?:large|much text) for automatic repair/, "output_too_large"],
-  [/unrecognized checker output encoding/, "output_encoding"],
-  [/no readable diagnostic|no supported findings/, "output_unreadable"],
-  [/Junie left the repair targets unchanged/, "unchanged"],
-  [/Junie did not record a completed repair/, "repair_incomplete"],
-  [/Junie changed files outside the repair targets/, "unexpected_changes"],
-  [/repair interrupted|Junie による修正を停止/, "repair_interrupted"],
-  [/Junie(?:Launch|Session|Connection)Error:/, "junie_unavailable"],
-  [/checker interrupted by user/, "checker_interrupted"],
-  [/checker did not complete normally/, "checker_incomplete"],
-];
 
-// 現行の理由コードと旧Runの診断を、確認画面の案内へ変換する。
 function checkerReviewCopy(data) {
-  const legacy = checkerLegacyReasons.find(([pattern]) => pattern.test(data.error || ""))?.[1];
   const fallback = data.status === "checker_failed" ? "checker_incomplete" : "review_required";
-  const [reason, next] = checkerReviewGuidance[data.checker_review_reason || legacy] || checkerReviewGuidance[fallback];
+  const [reason, next] = checkerReviewGuidance[data.checker_review_reason] || checkerReviewGuidance[fallback];
   const action = !data.resumable ? "チェッカーの設定と詳細ログを確認してください。"
     : next || "チェッカー出力を確認し、修正方針を「Junie への追加指示」に入力して「指示を送って再開」を選ぶか、「エディタで手修正」を選んでください。";
   return {reason, action};

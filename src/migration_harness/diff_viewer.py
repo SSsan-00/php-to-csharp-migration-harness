@@ -11,6 +11,7 @@ from typing import Any
 from migration_harness.capsules import (
     input_encoding, load_capsule_manifest, migration_php_encodings, pinned_php_sources, read_pinned_php,
 )
+from migration_harness.config import target_paths
 from migration_harness.files import sha256_file
 from migration_harness.run_records import load_saved_run, validate_run_id
 from migration_harness.worktree_targets import worktree_source_lock
@@ -77,15 +78,7 @@ def capture_workspace(
                 if name not in pins_by_path:
                     raise ValueError(f"移行対象のPHPがRunに保存されていません: {name}")
                 sources.append(pins_by_path[name])
-        target = Path(unit["target"]).as_posix()
-        if "targets" in unit:
-            targets = unit["targets"]
-        elif target.lower().endswith(".cshtml.cs"):
-            targets = [target, target[:-3]]
-        elif target.lower().endswith(".cshtml"):
-            targets = [target + ".cs", target]
-        else:
-            targets = [target]
+        targets = [path.as_posix() for path in target_paths(unit)]
         right_paths = {}
         draft_files = []
         missing_files = []
